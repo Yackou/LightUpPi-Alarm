@@ -31,6 +31,7 @@ class AlarmManager(object):
     """
     General management system for the LightUp Alarm package.
     """
+    alarmdb = AlarmDb()
 
     #
     # Instance initialiser
@@ -54,7 +55,7 @@ class AlarmManager(object):
         self.__alarm_threads = []
 
         # Set dummy alarms if database empty
-        if AlarmDb().get_number_of_alarms() == 0:
+        if AlarmManager.alarmdb.get_number_of_alarms() == 0:
             self.load_dummy_alarms()
 
         # Register and launch any active (enabled with repeat days) alarms
@@ -72,7 +73,7 @@ class AlarmManager(object):
         Static method, gets the current set snooze time interval.
         :return: Integer with the snooze time interval in minutes.
         """
-        return AlarmDb().get_snooze_time()
+        return AlarmManager.alarmdb.get_snooze_time()
 
     @staticmethod
     def set_snooze_time(snooze_time):
@@ -81,7 +82,7 @@ class AlarmManager(object):
         :param snooze_time: Integer, new snooze time in minutes.
         :return: Boolean indicating the operation success.
         """
-        return AlarmDb().set_snooze_time(snooze_time)
+        return AlarmManager.alarmdb.set_snooze_time(snooze_time)
 
     @staticmethod
     def get_offset_alert_time():
@@ -90,7 +91,7 @@ class AlarmManager(object):
         after the alarm alert is triggered), used to set some action.
         :return: Integer, the offset alert time in minutes.
         """
-        return AlarmDb().get_offset_alert_time()
+        return AlarmManager.alarmdb.get_offset_alert_time()
 
     @staticmethod
     def set__offset_alert_time(offset_alert_time):
@@ -101,7 +102,7 @@ class AlarmManager(object):
         :param offset_alert_time: Integer, offset alert time in minutes.
         :return: Boolean indicating the operation success.
         """
-        return AlarmDb().set_offset_alert_time(offset_alert_time)
+        return AlarmManager.alarmdb.set_offset_alert_time(offset_alert_time)
 
     #
     # static methods to retrieve alarms
@@ -113,7 +114,7 @@ class AlarmManager(object):
         :return: List of AlarmItems containing all alarms. Returns an empty list
                  if there aren't any.
         """
-        return AlarmDb().get_all_alarms()
+        return AlarmManager.alarmdb.get_all_alarms()
 
     @staticmethod
     def get_number_of_alarms():
@@ -121,7 +122,7 @@ class AlarmManager(object):
         Gets the number of alarms stored in the database.
         :return: Integer indicating the number of alarms in the db.
         """
-        return AlarmDb().get_number_of_alarms()
+        return AlarmManager.alarmdb.get_number_of_alarms()
 
     @staticmethod
     def get_all_enabled_alarms():
@@ -130,7 +131,7 @@ class AlarmManager(object):
         :return: List of AlarmItems containing all enabled alarms. Returns an
                  empty list if there aren't any.
         """
-        return AlarmDb().get_all_enabled_alarms()
+        return AlarmManager.alarmdb.get_all_enabled_alarms()
 
     @staticmethod
     def get_all_disabled_alarms():
@@ -139,7 +140,7 @@ class AlarmManager(object):
         :return: List of AlarmItems containing all enabled alarms. Returns an
                  empty list if there aren't any.
         """
-        return AlarmDb().get_all_disabled_alarms()
+        return AlarmManager.alarmdb.get_all_disabled_alarms()
 
     @staticmethod
     def get_all_active_alarms():
@@ -168,7 +169,7 @@ class AlarmManager(object):
         :return: AlarmItem with the alarm data, or None if id could not be
                  found.
         """
-        return AlarmDb().get_alarm(alarm_id)
+        return AlarmManager.alarmdb.get_alarm(alarm_id)
 
     @staticmethod
     def get_next_alarm():
@@ -216,7 +217,7 @@ class AlarmManager(object):
             hour, minute, days=days, enabled=enabled, label=label,
             timestamp=timestamp)
         if alarm is not None:
-            alarm.id_ = AlarmDb().add_alarm(alarm)
+            alarm.id_ = AlarmManager.alarmdb.add_alarm(alarm)
             if alarm.id_ is not None:
                 self.__set_alarm_thread(alarm)
                 return alarm.id_
@@ -250,7 +251,7 @@ class AlarmManager(object):
         :param label: Strong to contain the alarm label.
         :return: Boolean indicating the success of the 'edit' operation.
         """
-        db = AlarmDb()
+        db = AlarmManager.alarmdb
         # As the default values for AlarmDb.edit_alarm are all None as well we
         # can send all through as is.
         success = db.edit_alarm(
@@ -273,7 +274,7 @@ class AlarmManager(object):
         :return: Boolean indicating the success of the 'update' operation.
         """
         if isinstance(alarm, AlarmItem):
-            success = AlarmDb().update_alarm(alarm)
+            success = AlarmManager.alarmdb.update_alarm(alarm)
         else:
             success = False
         return success
@@ -289,7 +290,7 @@ class AlarmManager(object):
         # First we need to ensure it there is no alarm thread running for it
         self.__stop_alarm_thread(alarm_id)
         # Remove it from the database
-        return AlarmDb().delete_alarm(alarm_id)
+        return AlarmManager.alarmdb.delete_alarm(alarm_id)
 
     def delete_all_alarms(self):
         """
@@ -299,7 +300,7 @@ class AlarmManager(object):
         # Ensure there are no alarm threads running anymore
         thread_success = self.__stop_all_alarm_threads()
         # Remove from database
-        db_success = AlarmDb().delete_all_alarms()
+        db_success = AlarmManager.alarmdb.delete_all_alarms()
 
         if thread_success is True and db_success is True:
             return True
@@ -464,7 +465,7 @@ class AlarmManager(object):
 
             if len(self.__alarm_threads) != running_counter:
                 print('ERROR: Could not correct the alarm threads in' +
-                      'AlarmManager().check_threads_state !',
+                      'self.check_threads_state !',
                       file=sys.stderr)
 
         return previously_correct

@@ -73,6 +73,7 @@ class AlarmDb(object):
                       'constructor is not a valid String !')
             self.db_file = 'sqlite:////home/yannick/alarmdatabase.db'
 
+        self.alarms_table = self.__connect_alarms()
         # Check if the settings table is empty
         settings_table = self.__connect_settings()
         rows = settings_table.all()
@@ -167,8 +168,7 @@ class AlarmDb(object):
         Gets the number of alarms (db table rows) stored in the database.
         :return: Integer indicating the number of saved alarms.
         """
-        alarms_table = self.__connect_alarms()
-        return len(alarms_table)
+        return len(self.alarms_table)
 
     def get_all_alarms(self):
         """
@@ -176,7 +176,7 @@ class AlarmDb(object):
         :return: List of AlarmItems containing all alarms. Returns an empty list
                  if there aren't any.
         """
-        alarms_table = self.__connect_alarms()
+        alarms_table = self.alarms_table
         alarm_list = []
         for alarm in alarms_table:
             alarm_list.append(
@@ -195,7 +195,7 @@ class AlarmDb(object):
         :return: List of AlarmItems containing all enabled alarms. Returns an
                  empty list if there aren't any.
         """
-        alarms_table = self.__connect_alarms()
+        alarms_table = self.alarms_table
         alarm_list = []
         enabled_alarms = alarms_table.find(enabled=True)
         for alarm in enabled_alarms:
@@ -215,7 +215,7 @@ class AlarmDb(object):
         :return: List of AlarmItems containing all disabled alarms. Returns an
                  empty list if there aren't any.
         """
-        alarms_table = self.__connect_alarms()
+        alarms_table = self.alarms_table
         alarm_list = []
         disabled_alarms = alarms_table.find(enabled=False)
         for alarm in disabled_alarms:
@@ -236,7 +236,7 @@ class AlarmDb(object):
         :return: AlarmItem with the alarm data, or None if id could not be
                  found.
         """
-        alarms_table = self.__connect_alarms()
+        alarms_table = self.alarms_table
         alarm_dict = alarms_table.find_one(id=alarm_id)
 
         if alarm_dict is None:
@@ -266,7 +266,7 @@ class AlarmDb(object):
             pass
         out_iostr = StringIO.StringIO()
         original_close = out_iostr.close
-        alarms_table = self.__connect_alarms()
+        alarms_table = self.alarms_table
 
         # Retrieve the db as a json StringIO without the close method
         out_iostr.close = fake_close
@@ -309,7 +309,7 @@ class AlarmDb(object):
         if alarm_item.timestamp is None:
             alarm_item.timestamp = int(round(time.time()))
 
-        alarms_table = self.__connect_alarms()
+        alarms_table = self.alarms_table
         key = alarms_table.insert(
             dict(hour=alarm_item.hour, minute=alarm_item.minute,
                  monday=alarm_item.monday, tuesday=alarm_item.tuesday,
@@ -334,7 +334,7 @@ class AlarmDb(object):
         :param enabled: Optional boolean to indicate new alarm enabled state.
         :return: Boolean indicating the success of the 'edit' operation.
         """
-        alarms_table = self.__connect_alarms()
+        alarms_table = self.alarms_table
         success = True
 
         # Parse hour variable
@@ -417,7 +417,7 @@ class AlarmDb(object):
         :return: Boolean indicating the success of the 'update' operation.
         """
         if isinstance(alarm, AlarmItem):
-            alarms_table = self.__connect_alarms()
+            alarms_table = self.alarms_table
             alarm.timestamp = int(round(time.time()))
             success = alarms_table.update(
                 dict(id=alarm.id_, hour=alarm.hour, minute=alarm.minute,
@@ -442,7 +442,7 @@ class AlarmDb(object):
                          removed.
         :return: Boolean indicating the success of the 'delete' operation.
         """
-        alarms_table = self.__connect_alarms()
+        alarms_table = self.alarms_table
         success = alarms_table.delete(id=alarm_id)
         return success
 
@@ -451,6 +451,6 @@ class AlarmDb(object):
         Remove all the alarms by dropping the table and creating it again.
         :return: Boolean indicating the success of the 'delete' operation.
         """
-        alarms_table = self.__connect_alarms()
+        alarms_table = self.alarms_table
         success = alarms_table.delete()
         return success
