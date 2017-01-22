@@ -71,7 +71,7 @@ class AlarmDb(object):
             if db_name is not None:
                 print('The database name inputted in the AlarmDbHelper ' +
                       'constructor is not a valid String !')
-            self.db_file = 'sqlite:///alarmdatabase.db'
+            self.db_file = 'sqlite:////home/yannick/alarmdatabase.db'
 
         # Check if the settings table is empty
         settings_table = self.__connect_settings()

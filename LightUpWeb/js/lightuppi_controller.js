@@ -36,7 +36,8 @@ LightUpPi.app.controller("lightUpCtrl", ["$scope", "$interval", "$http",
            $scope.serverError = true;
          });
   };
-  var promise = $interval($scope.refreshAlarmsData, 2000);
+  $scope.refreshAlarmsData();
+//  var promise = $interval($scope.refreshAlarmsData, 2000);
 }]);
 
 /**
