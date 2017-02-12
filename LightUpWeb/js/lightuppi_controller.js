@@ -21,7 +21,7 @@ LightUpPi.app.controller("lightUpCtrl", ["$scope", "$interval", "$http",
   $scope.alarms = [];
 
   $scope.refreshAlarmsData = function() {
-    $http.get("LightUpPi/getAlarm?id=all")
+    $http.get("/LightUpPi/getAlarm?id=all")
          .success(function(data) {
            if (typeof data.error == 'undefined') {
              $scope.alarms = data.alarms;
@@ -148,7 +148,7 @@ LightUpPi.app.controller("AlarmPanelController", ["$scope", "$http",
   };
 
   this.enabledButtonClick = function(id, enabled) {
-    $http.get("LightUpPi/editAlarm?id=" + id +
+    $http.get("/LightUpPi/editAlarm?id=" + id +
               "&enabled=" + !enabled)
          .success(function(data) { $scope.refreshAlarmsData(); });
   }
