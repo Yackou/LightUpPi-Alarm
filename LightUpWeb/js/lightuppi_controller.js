@@ -50,6 +50,7 @@ LightUpPi.app.controller("AddAlarmModalCtrl", ["$scope", "$modal", "$log",
 
   $scope.open = function (size) {
     var modalInstance = $modal.open({
+      scope: $scope,
       animation: $scope.animationsEnabled,
       templateUrl: "addalarm.html",
       controller: "AddAlarmCtrl",
@@ -76,9 +77,34 @@ LightUpPi.app.controller("AddAlarmModalCtrl", ["$scope", "$modal", "$log",
  * Mote that $modalInstance represents a modal window (instance) dependency. It
  * is not the same as the $modal service used in AddAlarmModalCtrl.
  */
-LightUpPi.app.controller("AddAlarmCtrl", ["$scope", "$modalInstance", "$log",
-    function ($scope, $modalInstance, $log) {
+LightUpPi.app.controller("AddAlarmCtrl", ["$scope", "$modalInstance", "$log", "$http",
+    function ($scope, $modalInstance, $log, $http) {
   $scope.ok = function () {
+    $scope.addAlarm = function() {
+    $http.get("/LightUpPi/addAlarm?hour=" + $scope.mytime.getHours() +
+              "&minute=" + $scope.mytime.getMinutes() +
+              "&monday=" + $scope.monday +
+              "&tuesday=" + $scope.tuesday +
+              "&wednesday=" + $scope.wednesday +
+              "&thursday=" + $scope.thursday +
+              "&friday=" + $scope.friday +
+              "&saturday=" + $scope.saturday +
+              "&sunday=" + $scope.sunday +
+              "&label=" + $scope.label)
+         .success(function(data) {
+           if (typeof data.error == 'undefined') {
+             $scope.serverError = false;
+             $scope.refreshAlarmsData();
+           } else {
+             $scope.serverError = true;
+           }
+         })
+         .error(function(data, status) {
+           $scope.serverError = true;
+         });
+    };
+    $log.log("Adding alarm: " + $scope.mytime.getHours() + $scope.mytime.getMinutes());
+    $scope.addAlarm();
     $modalInstance.close();
   };
 
@@ -89,6 +115,16 @@ LightUpPi.app.controller("AddAlarmCtrl", ["$scope", "$modalInstance", "$log",
   $scope.mytime = new Date();
   $scope.hstep = 1;
   $scope.mstep = 1;
+
+  $scope.monday = false;
+  $scope.tuesday = false;
+  $scope.wednesday = false;
+  $scope.thursday = false;
+  $scope.friday = false;
+  $scope.saturday = false;
+  $scope.sunday = false;
+
+  $scope.label = "";
 
   $scope.ismeridian = true;
   $scope.toggleMeridianMode = function() {
