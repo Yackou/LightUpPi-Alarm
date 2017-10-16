@@ -189,6 +189,11 @@ LightUpPi.app.controller("AlarmPanelController", ["$scope", "$http",
          .success(function(data) { $scope.refreshAlarmsData(); });
   }
 
+  this.deleteButtonClick = function(id) {
+    $http.get("/LightUpPi/deleteAlarm?id=" + id)
+         .success(function(data) { $scope.refreshAlarmsData(); });
+  }
+
   // Formats a string to list the repeat days
   this.formatedRepeat = function(alarm) {
     var d = "---"
