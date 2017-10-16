@@ -98,8 +98,40 @@
             </div>
          </div>
       </div>
-   </div>
 
+      <div class="row" ng-controller="StationController as stationTable" ng-cloak>
+            <!-- This bootstrap alert is only shown on server error -->
+            <div class="alert alert-warning" role="alert" style="text-align: center" ng-show="serverStationError">
+                There was a problem loading the alarms from the server.
+                Default alarms loaded for demonstration only.
+            </div>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Name</th><th>URL</th><th></th>
+                    </tr>
+                </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <td><input type="text" class="form-control input-sm" ng-model="new_station_name" placeholder="station"></td>
+                            <td><input type="text" class="form-control input-sm" ng-model="new_station_url" placeholder="url"></td>
+                            <td class="vert-aligned"><button type="button" class="btn btn-xs btn-primary" style="display: inline; float: right" ng-click="stationTable.addButtonClick()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></td>
+                        </tr>
+                        <tr ng-repeat="station in stations">
+                            <td>{{station.id}}</td>
+                            <td>{{station.name}}</td>
+                            <td>{{station.url}}</td>
+                            <td>
+                            <div class="btn-group vert-aligned" style="display: inline; float: right">
+                                <button type="button" class="btn btn-xs close" ng-click="stationTable.deleteButtonClick(station.id)" aria-label="Close"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                            </div>
+                            </td>
+                        </tr>
+                    </tbody>
+            </table>
+      </div>
+   </div>
 
    <!-- footer -->
    <footer>

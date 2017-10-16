@@ -177,3 +177,79 @@ class ServerAlarmAdapter(object):
         return_dict = {'dataType': 'Deleted all alarms',
                        'success': success}
         return json.dumps(return_dict, indent=4, separators=(',', ': '))
+
+
+
+    @staticmethod
+    def station_to_dict(station):
+        return {'id': station.id_,
+                'name': station.name,
+                'url': station.url}
+
+    #
+    # retrieve station data in json format
+    #
+    def json_get_station(self, station_id):
+        station = self.alarm_mgr.get_station(station_id)
+        return json.dumps(
+            ServerAlarmAdapter.station_to_dict(station),
+            indent=4, separators=(',', ': '))
+
+    def json_get_all_stations(self):
+        all_stations = self.alarm_mgr.get_all_stations()
+        print(all_stations)
+        stations_dicts = []
+        for station in all_stations:
+            stations_dicts.append(ServerAlarmAdapter.station_to_dict(station))
+        stations_dicts = {'dataType': 'All stations',
+                        'size': len(stations_dicts),
+                        'stations': stations_dicts}
+        return json.dumps(stations_dicts, indent=4, separators=(',', ': '))
+
+    #
+    # Perform operations to the stations (add, edit, delete) returning json data
+    #
+    def json_add_station(self, name, url):
+        """
+        Adds a station by sending it to the AlarmManager class instance.
+        Input sanitation is done at the AlarmManager method.
+        :param name: String containing the name of the station.
+        :param url: String containing the URL of the station.
+        :return: Integer indicating the newly created station ID, or None if fail.
+        """
+        station_id = self.alarm_mgr.add_station(name, url)
+
+        return_dict = {'dataType': 'Add station'}
+        if station_id is not None:
+            retrieved_station = self.alarm_mgr.get_station(station_id)
+            return_dict['id'] = station_id
+            if retrieved_station is not None:
+                return_dict['success'] = True
+            else:
+                return_dict['success'] = False
+        else:
+            return_dict['success'] = False
+        return json.dumps(return_dict, indent=4, separators=(',', ': '))
+
+    def json_delete_station(self, station_id):
+        """
+        Remove the station with the given ID.
+        :param station_id: Integer to indicate ID of the Alarm to be removed.
+        :return: JSON string containing the data type, deleted station ID, and
+                 success information.
+        """
+        success = self.alarm_mgr.delete_station(station_id)
+        return_dict = {'dataType': 'Deleted station',
+                       'id': station_id,
+                       'success': success}
+        return json.dumps(return_dict, indent=4, separators=(',', ': '))
+
+    def json_delete_all_stations(self):
+        """
+        Removes all stations.
+        :return: JSON string containing the data type, and success information.
+        """
+        success = self.alarm_mgr.delete_all_stations()
+        return_dict = {'dataType': 'Deleted all stations',
+                       'success': success}
+        return json.dumps(return_dict, indent=4, separators=(',', ': '))

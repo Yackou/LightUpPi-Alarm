@@ -18,11 +18,13 @@ import time
 try:
     from LightUpAlarm.AlarmDb import AlarmDb
     from LightUpAlarm.AlarmItem import AlarmItem
+    from LightUpAlarm.StationItem import StationItem
     from LightUpAlarm.AlarmThread import AlarmThread
     from LightUpAlarm.Py23Compatibility import *
 except ImportError:
     from AlarmDb import AlarmDb
     from AlarmItem import AlarmItem
+    from StationItem import StationItem
     from AlarmThread import AlarmThread
     from Py23Compatibility import *
 
@@ -306,6 +308,62 @@ class AlarmManager(object):
             return True
         else:
             return False
+
+    @staticmethod
+    def get_station(station_id):
+        """
+        Get the station with the given ID from the database.
+        :param station_id: Integer to indicate the primary key of the Station to
+                         get.
+        :return: StationItem with the station data, or None if id could not be
+                 found.
+        """
+        return AlarmManager.alarmdb.get_station(station_id)
+
+    @staticmethod
+    def get_all_stations():
+        """
+        Static method, gets all the stations from the database.
+        :return: List of StationItems containing all stations. Returns an empty list
+                 if there aren't any.
+        """
+        return AlarmManager.alarmdb.get_all_stations()
+
+    #
+    # member methods to add stations
+    #
+    def add_station(self, name, url):
+        """
+        Adds a station to the database with the input values.
+        :param name: String containing the name of the station.
+        :param url: String containing the URL of the station.
+        :return: Integer indicating the newly created station ID, or None if fail.
+        """
+        station = StationItem(name, url)
+        if station is not None:
+            station.id_ = AlarmManager.alarmdb.add_station(station)
+            if station.id_ is not None:
+                return station.id_
+        return None
+
+    def delete_station(self, station_id):
+        """
+        Remove the station with the given ID from the database.
+        :param station_id: Integer to indicate the primary key of the Station to be
+                         removed.
+        :return: Boolean indicating the success of the 'delete station' operation.
+        """
+        # Remove it from the database
+        return AlarmManager.alarmdb.delete_station(station_id)
+
+    def delete_all_stations(self):
+        """
+        Removes all stations from the database.
+        :return: Boolean indicating the success of the 'delete all' operation.
+        """
+        # Remove from database
+        return AlarmManager.alarmdb.delete_all_stations()
+
 
     #
     # member methods to launch, edit and stop alarm events

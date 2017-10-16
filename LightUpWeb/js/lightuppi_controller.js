@@ -18,7 +18,9 @@ LightUpPi.app = angular.module("lightUpPi", ["ui.bootstrap"]);
 LightUpPi.app.controller("lightUpCtrl", ["$scope", "$interval", "$http",
     function($scope, $interval, $http) {
   $scope.serverError = false;
+  $scope.serverStationError = false;
   $scope.alarms = [];
+  $scope.stations = [];
 
   $scope.refreshAlarmsData = function() {
     $http.get("/LightUpPi/getAlarm?id=all")
@@ -36,7 +38,24 @@ LightUpPi.app.controller("lightUpCtrl", ["$scope", "$interval", "$http",
            $scope.serverError = true;
          });
   };
+
+    $scope.refreshStationsData = function() {
+    $http.get("/LightUpPi/getStation?id=all")
+         .success(function(data) {
+           if (typeof data.error == 'undefined') {
+             $scope.stations = data.stations;
+             $scope.serverStationError = false;
+           } else {
+             $scope.serverStationError = true;
+           }
+         })
+         .error(function(data, status) {
+           $scope.serverStationError = true;
+         });
+  };
+
   $scope.refreshAlarmsData();
+  $scope.refreshStationsData();
 //  var promise = $interval($scope.refreshAlarmsData, 2000);
 }]);
 
@@ -208,6 +227,47 @@ LightUpPi.app.controller("AlarmPanelController", ["$scope", "$http",
     return strArray.join(" ");
   };
 }]);
+
+
+
+/**
+ * Controller for the Station Table. It collects the JSON data from the server
+ * and creates a row per Station with all its information.
+ */
+LightUpPi.app.controller("StationController", ["$scope", "$http", "$log",
+    function ($scope, $http, $log) {
+  var context = this;
+
+  this.addButtonClick = function() {
+    $scope.addStation = function() {
+    $http.get("/LightUpPi/addStation?name=" + $scope.new_station_name +
+              "&url=" + $scope.new_station_url)
+         .success(function(data) {
+            $scope.new_station_name = ""
+            $scope.new_station_url = ""
+            $scope.refreshStationsData();
+            $log.info("Station added: " + $scope.new_station_name + " " + $scope.new_station_url);
+         })
+         .error(function(data, status) {
+           $scope.serverStationError = true;
+           $log.info("Error adding Station: " + $scope.new_station_name + " " + $scope.new_station_url);
+         });
+    };
+    $log.info("Adding Station: " + $scope.new_station_name + " " + $scope.new_station_url);
+    $scope.addStation();
+  };
+
+  this.deleteButtonClick = function(id) {
+    $http.get("/LightUpPi/deleteStation?id=" + id)
+         .success(function(data) { $scope.refreshStationsData(); });
+  };
+
+  $scope.new_station_name = "";
+  $scope.new_station_url = "";
+
+}]);
+
+
 
 /**
  * Create a custom filter to always display a leading zero for < 10 digits.

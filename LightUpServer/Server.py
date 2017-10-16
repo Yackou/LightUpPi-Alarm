@@ -343,6 +343,82 @@ def delete_alarm():
     return jsonify(message)
 
 
+@flask_server.route('/LightUpPi/getStation', methods=['GET'])
+def get_station():
+    callback()
+    global alarm_adapt
+    message = {'error': 'The \'id\' argument is required for \'getAlarm\''}
+    station_id = request.args.get('id')
+    if station_id is not None:
+        if station_id == 'all':
+            # /LightUpPi/getStation?id=all
+            json_response = alarm_adapt.json_get_all_stations()
+            return Response(json_response,  mimetype='application/json')
+        else:
+            # /LightUpPi/getStation?id=<station_id>
+            try:
+                station_id = int(station_id)
+                json_response = alarm_adapt.json_get_station(int(station_id))
+                return Response(json_response,  mimetype='application/json')
+            except ValueError:
+                message['error'] = 'The \'id\' argument has to be an integer'
+
+    # At this point credentials were invalid or request method was not GET
+    return jsonify(message)
+
+
+@flask_server.route('/LightUpPi/addStation', methods=['GET'])
+def add_station():
+    """
+    Adding a station to the database.
+    The name and url arguments are mandatory.
+    The full request is:
+    /LightUpPi/addStation?name=<>&url=<>
+    :return: JSON string with response data indicating success of operation.
+    """
+    global alarm_adapt
+
+    # Parsing the hour argument, if not present or wrong return error message
+    name = request.args.get('name')
+    if name is None:
+        message = {'error': 'The \'name\' argument is required to add station'}
+        return jsonify(message)
+
+    # Parsing the url argument, if not present or wrong return error message
+    url = request.args.get('url')
+    if url is None:
+        message = {'error': 'The \'url\' argument is required to add station'}
+        return jsonify(message)
+
+    # At this point all arguments should be correct
+    json_response = alarm_adapt.json_add_station(
+        name, url)
+    return Response(json_response, mimetype='application/json')
+
+
+@flask_server.route('/LightUpPi/deleteStation', methods=['GET'])
+def delete_station():
+    global alarm_adapt
+    message = {'error': 'The \'id\' argument is required for \'deleteAlarm\''}
+    station_id = request.args.get('id')
+    if station_id is not None:
+        if station_id == 'all':
+            # /LightUpPi/deleteStation?id=all
+            json_response = alarm_adapt.json_delete_all_stations()
+            return Response(json_response,  mimetype='application/json')
+        else:
+            # /LightUpPi/deleteStation?id=<station_id>
+            try:
+                station_id = int(station_id)
+                json_response = alarm_adapt.json_delete_station(int(station_id))
+                return Response(json_response,  mimetype='application/json')
+            except ValueError:
+                message['error'] = 'The \'id\' argument has to be an integer'
+
+    # At this point credentials were invalid or request method was not GET
+    return jsonify(message)
+
+
 def run(alarm_mgr_arg, silent=False, callback_arg=None):
     global alarm_adapt, callback_func
     alarm_adapt = ServerAlarmAdapter(alarm_mgr_arg)

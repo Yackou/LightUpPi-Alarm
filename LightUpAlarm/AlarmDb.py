@@ -45,9 +45,11 @@ except ImportError:
     sys.exit(1)
 try:
     from LightUpAlarm.AlarmItem import AlarmItem
+    from LightUpAlarm.StationItem import StationItem
     from LightUpAlarm.Py23Compatibility import *
 except ImportError:
     from AlarmItem import AlarmItem
+    from StationItem import StationItem
     from Py23Compatibility import *
 
 
@@ -80,6 +82,8 @@ class AlarmDb(object):
         if rows.count == 0:
             settings_table.insert(dict(snooze_time=3, offset_alert_time=-15))
 
+        self.stations_table = self.__connect_stations()
+
     #
     # db connection member functions
     #
@@ -92,6 +96,11 @@ class AlarmDb(object):
         """ Connecting to a SQLite database table 'settings'. """
         settings_table = dataset.connect(self.db_file)['settings']
         return settings_table
+
+    def __connect_stations(self):
+        """ Connecting to a SQLite database table 'stations'. """
+        stations_table = dataset.connect(self.db_file)['stations']
+        return stations_table
 
     #
     # member functions to set settings
@@ -453,4 +462,114 @@ class AlarmDb(object):
         """
         alarms_table = self.alarms_table
         success = alarms_table.delete()
+        return success
+
+    #
+    # member functions to retrieve station data
+    #
+    def get_number_of_stations(self):
+        """
+        Gets the number of stations (db table rows) stored in the database.
+        :return: Integer indicating the number of saved stations.
+        """
+        return len(self.stations_table)
+
+    def get_all_stations(self):
+        """
+        Returns all the stations in a list of AlarmItems.
+        :return: List of AlarmItems containing all alarms. Returns an empty list
+                 if there aren't any.
+        """
+        stations_table = self.stations_table
+        station_list = []
+        for station in stations_table:
+            station_list.append(StationItem(station['name'], station['url'], station_id = station['id']))
+
+        return station_list
+
+    def get_station(self, station_id):
+        """
+        Get the station with the given ID from the database.
+        :param station_id: Integer to indicate the primary key of the row to get.
+        :return: StationItem with the station data, or None if id could not be
+                 found.
+        """
+        stations_table = self.stations_table
+        station_dict = stations_table.find_one(id=station_id)
+
+        if station_dict is None:
+            return None
+        else:
+            return StationItem(station_dict['name'], station_dict['url'], station_id = station_dict['id'])
+
+    def export_stations_json(self):
+        """
+        Exports all the station data into a JSON string.
+        The dataset.freeze() method exports the table into a file object, but
+        it is going to be "tricked" into getting an string object to send back.
+        Because it also closes the object file we need to overwrite the close
+        function to retrieve the data and, then restore it back to normal.
+        :return: String containing all the station data
+        """
+        def fake_close():
+            pass
+        out_iostr = StringIO.StringIO()
+        original_close = out_iostr.close
+        stations_table = self.stations_table
+
+        # Retrieve the db as a json StringIO without the close method
+        out_iostr.close = fake_close
+        dataset.freeze(stations_table.all(), format='json', fileobj=out_iostr)
+        out_str = out_iostr.getvalue()
+        out_iostr.close = original_close
+        out_iostr.close()
+
+        # Get only the required data and format it
+        stations_dict = {'stations': json.loads(out_str)['results']}
+
+        # This commented out line would prettify the string
+        #json.dumps(stations_dict, indent=4, separators=(',', ': '))
+        return json.dumps(stations_dict)
+
+    #
+    # member functions to add station data
+    #
+    def add_station(self, station_item):
+        """
+        Adds a station to the database. Returns the new
+        row primary key.
+        :return: Integer row primary key.
+        """
+        if not isinstance(station_item, StationItem):
+            print('ERROR: Provided argument to AlarmDb().add_station must be of' +
+                  'the StationItem type and not %s !' % type(station_item),
+                  file=sys.stderr)
+            return
+
+        stations_table = self.stations_table
+        key = stations_table.insert(
+            dict(name=station_item.name, url=station_item.url))
+        return key
+
+            #
+    # member functions to remove station data
+    #
+    def delete_station(self, station_id):
+        """
+        Remove the station with the given ID from the database.
+        :param station_id: Integer to indicate the primary key of the row to be
+                         removed.
+        :return: Boolean indicating the success of the 'delete' operation.
+        """
+        stations_table = self.stations_table
+        success = stations_table.delete(id=station_id)
+        return success
+
+    def delete_all_stations(self):
+        """
+        Remove all the stations by dropping the table and creating it again.
+        :return: Boolean indicating the success of the 'delete' operation.
+        """
+        stations_table = self.stations_table
+        success = stations_table.delete()
         return success
