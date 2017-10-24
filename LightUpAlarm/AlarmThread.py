@@ -198,7 +198,7 @@ class AlarmThread(threading.Thread):
             print('\nALERT for the Alarm %s, with label:"%s" !!!' %
                   (alarm_item.id_, alarm_item.label))
             if callback is not None:
-                callback()
+                callback(alarm_item)
         finally:
             # Unblock
             cls.__alert_running = False
