@@ -93,7 +93,8 @@
                   <strong>Alarm time:</strong> {{alarm.hour|leadingzero}}:{{alarm.minute|leadingzero}} <br />
                   <strong>Repeat:</strong> {{panels.formatedRepeat(alarm)}}<br />
                   <strong>Label:</strong> {{alarm.label}} <br />
-                  <span ng-show="panels.showTimestamp"><strong>Timestamp:</strong> {{alarm.timestamp | date:'dd/MM/yy @ h:mma'}}</span>
+                  <span ng-show="panels.showTimestamp"><strong>Timestamp:</strong> {{alarm.timestamp | date:'dd/MM/yy @ h:mma'}}</span> <br />
+                  <strong>Radio station:</strong><select ng-model="alarm.station_id" ng-options="station.id as station.name for station in stations" ng-change="panels.stationChanged(alarm.id, alarm.station_id)"></select>
                </div>
             </div>
          </div>

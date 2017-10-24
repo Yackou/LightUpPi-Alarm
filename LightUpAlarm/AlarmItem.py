@@ -40,7 +40,7 @@ class AlarmItem(object):
     #
     def __new__(cls, hour, minute,
                 days=(False, False, False, False, False, False, False),
-                enabled=True, label='', timestamp=None, alarm_id=None):
+                enabled=True, label='', timestamp=None, alarm_id=None, station_id=None):
         """
         This is the class constructor. We need to initialise the class instance
         here instead of in __init__ because the accessors input sanitation is
@@ -80,6 +80,8 @@ class AlarmItem(object):
         # Contains the timestamp of the last time it was modified
         instance.__timestamp = None
 
+        instance.__station_id = None
+
         # Assigning values using accessors with input sanitation
         instance.hour = hour
         instance.minute = minute
@@ -90,6 +92,8 @@ class AlarmItem(object):
             instance.timestamp = timestamp
         if alarm_id is not None:
             instance.id_ = alarm_id
+        if station_id is not None:
+            instance.station_id = station_id
 
         # Now we check if the values have been set, if not, it means an input
         # was invalid and the object should not be created.
@@ -108,6 +112,8 @@ class AlarmItem(object):
             valid_inputs = False
         if alarm_id is not None and instance.id_ != alarm_id:
             valid_inputs = False
+        if station_id is not None and instance.station_id != station_id:
+            valid_inputs = False
 
         if valid_inputs is True:
             return instance
@@ -116,7 +122,7 @@ class AlarmItem(object):
 
     def __init__(self, hour, minute,
                  days=(False, False, False, False, False, False, False),
-                 enabled=True, label='', timestamp=None, alarm_id=None):
+                 enabled=True, label='', timestamp=None, alarm_id=None, station_id=None):
         """
         Any additional initialisation will go here. Nothing at the moment.
         Keep in mind all data has already been initialised in the __new__
@@ -384,6 +390,25 @@ class AlarmItem(object):
                   'has to be a Boolean !', file=sys.stderr)
 
     sunday = property(__get_sunday, __set_sunday)
+
+    #
+    # station_id accesor
+    #
+    def __get_station_id(self):
+        return self.__station_id
+
+    def __set_station_id(self, new_station_id):
+        """
+        Sets station_id. Must be an positive integer.
+        :param new_station_id: new station ID for the alarm instance.
+        """
+        if isinstance(new_station_id, int_type) and new_station_id >= 0:
+            self.__station_id = new_station_id
+        else:
+            print('ERROR: Provided AlarmItem().station_id type is not a ' +
+                  'positive Integer: %s!' % new_station_id, file=sys.stderr)
+
+    station_id = property(__get_station_id, __set_station_id)
 
     #
     # member methods to retrieve specific data

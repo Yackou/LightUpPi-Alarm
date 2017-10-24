@@ -63,7 +63,8 @@ class ServerAlarmAdapter(object):
                 'thursday': alarm.thursday,
                 'friday': alarm.friday,
                 'saturday': alarm.saturday,
-                'sunday': alarm.sunday}
+                'sunday': alarm.sunday,
+                'station_id': alarm.station_id}
 
     def get_alarm_repeat(self, alarm_id):
         alarm = self.alarm_mgr.get_alarm(alarm_id)
@@ -97,7 +98,7 @@ class ServerAlarmAdapter(object):
     #
     def json_add_alarm(self, hour, minute,
                        days=(False, False, False, False, False, False, False),
-                       enabled=True, label='', timestamp=None):
+                       enabled=True, label='', timestamp=None, station_id=1):
         """
         Adds an alarm by sending it to the AlarmManager class instance.
         Input sanitation is done at the AlarmManager method.
@@ -113,7 +114,7 @@ class ServerAlarmAdapter(object):
         """
         alarm_id = self.alarm_mgr.add_alarm(
             hour, minute, days=days, enabled=enabled, label=label,
-            timestamp=timestamp)
+            timestamp=timestamp, station_id=station_id)
 
         return_dict = {'dataType': 'Add alarm'}
         if alarm_id is not None:
@@ -129,7 +130,7 @@ class ServerAlarmAdapter(object):
         return json.dumps(return_dict, indent=4, separators=(',', ': '))
 
     def json_edit_alarm(self, alarm_id, hour=None, minute=None, days=None,
-                        enabled=None, label=None):
+                        enabled=None, label=None, station_id=None):
         """
         Edits an alarm from the database by sending the input data to the
         AlarmManager class instance.
@@ -143,7 +144,7 @@ class ServerAlarmAdapter(object):
         """
         success = self.alarm_mgr.edit_alarm(
             alarm_id, hour=hour, minute=minute, days=days, enabled=enabled,
-            label=label)
+            label=label, station_id=station_id)
         retrieved_alarm = self.alarm_mgr.get_alarm(alarm_id)
         return_dict = {'dataType': 'Edit alarm',
                        'id': alarm_id,

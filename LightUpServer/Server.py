@@ -107,7 +107,7 @@ def add_alarm():
     The full request is:
     /LightUpPi/addAlarm?hour=<>&minute=<>&monday=<>&tuesday=<>&wedneday=<>
         &thursday=<>&friday=<>&saturday=<>&sunday=<>&enabled=<>&label=<>
-        &timestamp=<>
+        &timestamp=<>&station_id=<>
     :return: JSON string with response data indicating success of operation.
     """
     global alarm_adapt
@@ -198,10 +198,20 @@ def add_alarm():
             message = {'error': 'The \'timestamp\' argument must be an integer'}
             return jsonify(message)
 
+    # Parsing the station_id argument, if wrong data type return error
+    station_id = request.args.get('station_id')
+    if station_id is not None:
+        try:
+            station_id = int(station_id)
+        except ValueError:
+            message = {'error': 'The \'station_id\' argument must be an integer'}
+            return jsonify(message)
+
+
     # At this point all arguments should be correct
     json_response = alarm_adapt.json_add_alarm(
         hour, minute, enabled=enabled, label=label, timestamp=timestamp,
-        days=(monday, tuesday, wednesday, thursday, friday, saturday, sunday))
+        days=(monday, tuesday, wednesday, thursday, friday, saturday, sunday), station_id=station_id)
     return Response(json_response, mimetype='application/json')
 
 
@@ -313,10 +323,19 @@ def edit_alarm():
     # Parsing the label argument
     label = request.args.get('label')
 
+    # Parsing the station_id argument
+    station_id = request.args.get('station_id')
+    if station_id is not None:
+        try:
+            station_id = int(station_id)
+        except ValueError:
+            message = {'error': 'The \'station_id\' argument must be an integer'}
+            return jsonify(message)
+
     # At this point all arguments should be correct
     json_response = alarm_adapt.json_edit_alarm(
         alarm_id=id_, hour=hour, minute=minute, enabled=enabled, label=label,
-        days=alarm_repeat)
+        days=alarm_repeat, station_id=station_id)
     return Response(json_response, mimetype='application/json')
 
 

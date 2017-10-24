@@ -109,7 +109,8 @@ LightUpPi.app.controller("AddAlarmCtrl", ["$scope", "$modalInstance", "$log", "$
               "&friday=" + $scope.friday +
               "&saturday=" + $scope.saturday +
               "&sunday=" + $scope.sunday +
-              "&label=" + $scope.label)
+              "&label=" + $scope.label +
+              "&station_id=" + $scope.station_id)
          .success(function(data) {
            if (typeof data.error == 'undefined') {
              $scope.serverError = false;
@@ -144,6 +145,8 @@ LightUpPi.app.controller("AddAlarmCtrl", ["$scope", "$modalInstance", "$log", "$
   $scope.sunday = false;
 
   $scope.label = "";
+
+  $scope.station_id = 1;
 
   $scope.ismeridian = true;
   $scope.toggleMeridianMode = function() {
@@ -210,6 +213,12 @@ LightUpPi.app.controller("AlarmPanelController", ["$scope", "$http",
 
   this.deleteButtonClick = function(id) {
     $http.get("/LightUpPi/deleteAlarm?id=" + id)
+         .success(function(data) { $scope.refreshAlarmsData(); });
+  }
+
+  this.stationChanged = function(id, station_id) {
+    $http.get("/LightUpPi/editAlarm?id=" + id +
+              "&station_id=" + station_id)
          .success(function(data) { $scope.refreshAlarmsData(); });
   }
 

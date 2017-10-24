@@ -200,7 +200,7 @@ class AlarmManager(object):
     #
     def add_alarm(self, hour, minute,
                   days=(False, False, False, False, False, False, False),
-                  enabled=True, label='', timestamp=None):
+                  enabled=True, label='', timestamp=None, station_id=1):
         """
         Adds an alarm to the database with the input values.
         If saved successfully it is sent to __set_alarm_thread to see if it
@@ -217,7 +217,7 @@ class AlarmManager(object):
         """
         alarm = AlarmItem(
             hour, minute, days=days, enabled=enabled, label=label,
-            timestamp=timestamp)
+            timestamp=timestamp, station_id=station_id)
         if alarm is not None:
             alarm.id_ = AlarmManager.alarmdb.add_alarm(alarm)
             if alarm.id_ is not None:
@@ -241,7 +241,7 @@ class AlarmManager(object):
     # member methods to edit alarms
     #
     def edit_alarm(self, alarm_id, hour=None, minute=None, days=None,
-                   enabled=None, label=None):
+                   enabled=None, label=None, station_id=None):
         """
         Edits an alarm from the database with the input data.
         A new timestamp is set by the AlarmDb class if the edit is successful.
@@ -258,7 +258,7 @@ class AlarmManager(object):
         # can send all through as is.
         success = db.edit_alarm(
             alarm_id,  hour=hour, minute=minute, days=days, enabled=enabled,
-            label=label)
+            label=label, station_id=station_id)
 
         # If a successful edit was carried, then make sure the alarm is launched
         if success is True:
